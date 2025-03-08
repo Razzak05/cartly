@@ -1,4 +1,5 @@
 import heroImg from "../../assets/rabbit-hero.webp";
+import { Link } from "react-router-dom";
 const Hero = () => {
   return (
     <section className="relative">
@@ -15,6 +16,12 @@ const Hero = () => {
           <p className="text-sm tracking-tighter md:text-lg mb-6">
             Explore our vacation-ready outfits with fast worlwide shipping
           </p>
+          <Link
+            to="#"
+            className="bg-white text-gray-950 px-6 py-2 rounded-sm text-lg"
+          >
+            Shop Now
+          </Link>
         </div>
       </div>
     </section>

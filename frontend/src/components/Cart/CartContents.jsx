@@ -18,7 +18,7 @@ const CartContents = () => {
       color: "Navy Blue",
       quantity: 1,
       price: 5,
-      image: "https://picsum.photos/200?random=1",
+      image: "https://picsum.photos/200?random=2",
     },
   ];
 

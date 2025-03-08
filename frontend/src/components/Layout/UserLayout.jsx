@@ -4,7 +4,7 @@ import Header from "../Common/Header";
 
 const UserLayout = () => {
   return (
-    <div>
+    <div className="overflow-x-hidden">
       {/* Header */}
       <Header />
       {/* Main Content  */}

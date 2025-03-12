@@ -18,7 +18,7 @@ const Topbar = () => {
           </a>
         </div>
         <div className="text-sm text-center flex-1">
-          <span>We ship worldwide - Fast and reliable shipping!</span>
+          <span>We ship all over Mumbai - Fast and reliable shipping!</span>
         </div>
         <div className="text-sm hidden md:block">
           <a href="tel:1234567890" className="hover:text-gray-300">

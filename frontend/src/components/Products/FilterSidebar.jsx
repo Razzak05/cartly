@@ -16,6 +16,8 @@ const FilterSidebar = () => {
     maxPrice: 100,
   });
 
+  const [priceRange, setPriceRange] = useState([0, 100]); // Fix: Initialize price range state
+
   const categories = ["Top Wear", "Bottom Wear"];
   const colors = [
     "Red",
@@ -63,6 +65,8 @@ const FilterSidebar = () => {
       minPrice: params.minPrice ? Number(params.minPrice) : 0,
       maxPrice: params.maxPrice ? Number(params.maxPrice) : 100,
     });
+
+    setPriceRange([0, params.maxPrice ? Number(params.maxPrice) : 100]); // Fix: Sync price range with filters
   }, [searchParams]);
 
   const handleFilterChange = (e) => {
@@ -71,7 +75,7 @@ const FilterSidebar = () => {
 
     if (type === "checkbox") {
       if (checked) {
-        newFilters[name] = [...newFilters[name], value];
+        newFilters[name] = [...(newFilters[name] || []), value];
       } else {
         newFilters[name] = newFilters[name].filter((item) => item !== value);
       }
@@ -96,6 +100,14 @@ const FilterSidebar = () => {
 
     setSearchParams(params);
     navigate(`?${params.toString()}`);
+  };
+
+  const handlePriceChange = (e) => {
+    const newPrice = Number(e.target.value);
+    setPriceRange([0, newPrice]); // Fix: Properly update price state
+    const newFilters = { ...filters, minPrice: 0, maxPrice: newPrice }; // Fix: Correct syntax
+    setFilters(newFilters); // Fix: Correct function syntax
+    updateURLParams(newFilters);
   };
 
   return (
@@ -152,7 +164,10 @@ const FilterSidebar = () => {
               className={`w-8 h-8 rounded-full border border-gray-300 cursor-pointer transition hover:scale-110 ${
                 filters.color === color ? "ring-2 ring-blue-500" : ""
               }`}
-              style={{ backgroundColor: color.toLowerCase() }}
+              style={{
+                backgroundColor: color.toLowerCase(),
+                filter: "brightness(0.9)",
+              }}
             ></button>
           ))}
         </div>
@@ -210,6 +225,26 @@ const FilterSidebar = () => {
             <span className="text-gray-700">{brand}</span>
           </div>
         ))}
+      </div>
+
+      {/* Price Range Filter */}
+      <div className="mb-8">
+        <label className="block text-gray-600 font-medium mb-2">
+          Price Range
+        </label>
+        <input
+          type="range"
+          name="priceRange"
+          min={0}
+          max={1000}
+          value={priceRange[1]}
+          onChange={handlePriceChange}
+          className="w-full h-2 bg-gray-300 rounded-lg cursor-pointer"
+        />
+        <div className="flex justify-between text-gray-600 mt-2">
+          <span>$0</span>
+          <span>${priceRange[1]}</span>
+        </div>
       </div>
     </div>
   );

@@ -25,6 +25,7 @@ const cart = {
 const Checkout = () => {
   const [checkoutId, setCheckoutId] = useState(null);
   const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
   const [shippingAddress, setShippingAddress] = useState({
     firstName: "",
     lastName: "",
@@ -35,17 +36,31 @@ const Checkout = () => {
     phone: "",
   });
 
+  const validateForm = () => {
+    let newErrors = {};
+    if (!shippingAddress.firstName.trim())
+      newErrors.firstName = "First name is required.";
+    if (!shippingAddress.lastName.trim())
+      newErrors.lastName = "Last name is required.";
+    if (!shippingAddress.address.trim())
+      newErrors.address = "Address is required.";
+    if (!shippingAddress.city.trim()) newErrors.city = "City is required.";
+    if (!shippingAddress.country.trim())
+      newErrors.country = "Country is required.";
+    if (!shippingAddress.postalCode.match(/^\d{4,6}$/))
+      newErrors.postalCode = "Enter a valid postal code.";
+    if (!shippingAddress.phone.match(/^\d{10}$/))
+      newErrors.phone = "Enter a valid 10-digit phone number.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleCreateCheckout = (e) => {
     e.preventDefault();
-    // Validate that all fields are filled before proceeding
-    const allFieldsFilled = Object.values(shippingAddress).every(
-      (field) => field.trim() !== ""
-    );
-    if (!allFieldsFilled) {
-      alert("Please fill in all shipping details.");
-      return;
+    if (validateForm()) {
+      setCheckoutId(123);
     }
-    setCheckoutId(123);
   };
 
   const handlePaymentSuccess = (details) => {
@@ -55,20 +70,9 @@ const Checkout = () => {
 
   return (
     <div className="grid grid-col-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto py-10 px-6 tracking-tighter">
-      {/* Left Section */}
       <div className="bg-white rounded-lg p-6">
         <h2 className="text-xl uppercase mb-6">Checkout</h2>
         <form onSubmit={handleCreateCheckout}>
-          <h3 className="text-lg mb-4">Contact Details</h3>
-          <div className="mb-4">
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              value="user@example.com"
-              className="w-full p-2 border rounded"
-              disabled
-            />
-          </div>
           <h3 className="text-lg mb-4">Delivery</h3>
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div>
@@ -83,8 +87,10 @@ const Checkout = () => {
                   })
                 }
                 className="w-full p-2 border rounded"
-                required
               />
+              {errors.firstName && (
+                <p className="text-red-500 text-sm">{errors.firstName}</p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700">Last Name</label>
@@ -98,8 +104,10 @@ const Checkout = () => {
                   })
                 }
                 className="w-full p-2 border rounded"
-                required
               />
+              {errors.lastName && (
+                <p className="text-red-500 text-sm">{errors.lastName}</p>
+              )}
             </div>
           </div>
           <div className="mb-4">
@@ -114,8 +122,10 @@ const Checkout = () => {
                 })
               }
               className="w-full p-2 border rounded"
-              required
             />
+            {errors.address && (
+              <p className="text-red-500 text-sm">{errors.address}</p>
+            )}
           </div>
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div>
@@ -130,8 +140,10 @@ const Checkout = () => {
                   })
                 }
                 className="w-full p-2 border rounded"
-                required
               />
+              {errors.city && (
+                <p className="text-red-500 text-sm">{errors.city}</p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700">Postal Code</label>
@@ -145,24 +157,11 @@ const Checkout = () => {
                   })
                 }
                 className="w-full p-2 border rounded"
-                required
               />
+              {errors.postalCode && (
+                <p className="text-red-500 text-sm">{errors.postalCode}</p>
+              )}
             </div>
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Country</label>
-            <input
-              type="text"
-              value={shippingAddress.country}
-              onChange={(e) =>
-                setShippingAddress({
-                  ...shippingAddress,
-                  country: e.target.value,
-                })
-              }
-              className="w-full p-2 border rounded"
-              required
-            />
           </div>
           <div className="mb-4">
             <label className="block text-gray-700">Phone</label>
@@ -176,8 +175,10 @@ const Checkout = () => {
                 })
               }
               className="w-full p-2 border rounded"
-              required
             />
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone}</p>
+            )}
           </div>
           <div className="mt-6">
             {!checkoutId ? (
@@ -188,54 +189,14 @@ const Checkout = () => {
                 Continue to Payment
               </button>
             ) : (
-              <div>
-                <h3 className="text-lg mb-4">Pay with PayPal</h3>
-                <PaypalButton
-                  amount={cart.totalPrice} // Fix: Use actual cart total
-                  onSuccess={handlePaymentSuccess}
-                  onError={() => alert("Payment Failed, Try Again!")}
-                />
-              </div>
+              <PaypalButton
+                amount={cart.totalPrice}
+                onSuccess={handlePaymentSuccess}
+                onError={() => alert("Payment Failed, Try Again!")}
+              />
             )}
           </div>
         </form>
-      </div>
-
-      {/* Right Section */}
-      <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="text-lg mb-4">Order Summary</h3>
-        {cart.products.map((product, index) => (
-          <div
-            key={index}
-            className="flex items-start justify-between py-2 border-b"
-          >
-            <div className="flex items-start">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-20 h-24 object-cover mr-4"
-              />
-              <div>
-                <h3 className="text-md">{product.name}</h3>
-                <p className="text-gray-500">Size: {product.size}</p>
-                <p className="text-gray-500">Color: {product.color}</p>
-              </div>
-            </div>
-            <p className="text-xl">${product.price?.toLocaleString()}</p>
-          </div>
-        ))}
-        <div className="flex justify-between items-center text-lg mt-4">
-          <p>Subtotal</p>
-          <p>${cart.totalPrice?.toLocaleString()}</p>
-        </div>
-        <div className="flex justify-between items-center text-lg">
-          <p>Shipping</p>
-          <p>Free</p>
-        </div>
-        <div className="flex justify-between items-center text-lg mt-4 border-t pt-4">
-          <p>Total</p>
-          <p>${cart.totalPrice?.toLocaleString()}</p>
-        </div>
       </div>
     </div>
   );

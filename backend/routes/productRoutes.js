@@ -144,4 +144,167 @@ router.delete("/:id", protect, admin, async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
+
+// @route GET /api/products
+// @desc Get all products with optional query filters
+// @access Public
+router.get("/", async (req, res) => {
+  try {
+    const {
+      collection,
+      size,
+      color,
+      gender,
+      minPrice,
+      maxPrice,
+      sortBy,
+      search,
+      category,
+      material,
+      brand,
+      limit,
+    } = req.query;
+
+    let query = {};
+
+    // Filter Logic
+    if (collection && collection.toLowerCase() !== "all") {
+      query.collection = collection;
+    }
+    if (category && category.toLowerCase() !== "all") {
+      query.category = category;
+    }
+    if (material) {
+      query.material = { $in: material.split(",") };
+    }
+    if (brand) {
+      query.brand = { $in: brand.split(",") };
+    }
+    if (size) {
+      query.sizes = { $in: size.split(",") };
+    }
+    if (color) {
+      query.colors = { $in: [color] };
+    }
+    if (gender) {
+      query.gender = gender;
+    }
+
+    // Price Range Filtering (Fixing MongoDB syntax)
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    // Search functionality (case-insensitive search on name & description)
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Sorting options
+    let sort = {};
+    if (sortBy) {
+      switch (sortBy) {
+        case "priceAsc":
+          sort = { price: 1 };
+          break;
+        case "priceDesc":
+          sort = { price: -1 };
+          break;
+        case "popularity":
+          sort = { rating: -1 }; // Should be descending for popularity
+          break;
+        default:
+          sort = { createdAt: -1 }; // Default: show newest first
+          break;
+      }
+    }
+
+    // Fetch products from database
+    let products = await Product.find(query)
+      .sort(sort)
+      .limit(Number(limit) || 0);
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route GET /api/products/best-seller
+// @desc Retrieve the product with highest rating
+// @access Public
+router.get("/best-seller", async (req, res) => {
+  try {
+    const bestSeller = await Product.findOne().sort({ rating: -1 });
+    if (bestSeller) {
+      res.json(bestSeller);
+    } else {
+      res.status(404).json({ message: "No best seller found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route GET /api/products/new-arrivals
+// @desc Retrieve latest 8 products - Creation date
+// @access Public
+router.get("/new-arrivals", async (req, res) => {
+  try {
+    // Fetch latest 8 products
+    const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(8);
+    res.json(newArrivals);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route GET /api/products/:id
+// @desc GET a single product by ID
+// @access Public
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: "Product Not Found" });
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route GET /api/products/similar/:id
+// @desc Retriveve similar products based on the current product's gender and category
+// @access Public
+router.get("/similar/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const similarProducts = await Product.find({
+      _id: { $ne: id }, // Exclude the current product ID
+      gender: product.gender,
+      category: product.category,
+    }).limit(4);
+
+    res.json(similarProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error: ", error.message);
+  }
+});
 export default router;

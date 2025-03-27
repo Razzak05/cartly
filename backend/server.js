@@ -6,21 +6,34 @@ import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import checkoutRoutes from "./routes/checkoutRoutes.js";
+import orderRoutes from "./routes/orderRoute.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import subscribeRoute from "./routes/subscribeRoute.js";
+import adminRoute from "./routes/adminRoutes.js";
 
+dotenv.config();
 const app = express();
+
+// Middleware
 app.use(express.json());
 app.use(cors());
-dotenv.config();
 
+// Test API
 app.get("/", (req, res) => {
   res.send("Welcome to CARTLY");
 });
 
-// API ROUTES
+// API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/checkout", checkoutRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/subscribe", subscribeRoute);
+
+// Admin Routes
+app.use("/api/admin/users", adminRoute);
 
 const PORT = process.env.PORT || 3000;
 connectDB();

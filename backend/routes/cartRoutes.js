@@ -199,6 +199,15 @@ router.get("/", async (req, res) => {
 // @route POST /api/cart/merge
 // @desc Merge guest cart into user cart on login
 // @access Private
+
+// 3 Cases:
+// Case 1: Guest Has a Cart, User Also Has a Cart (Merge Carts)
+// Case 2: Guest Has a Cart, User Has No Cart (Convert Guest Cart to User Cart)
+// Case 3: Guest Has No Cart, User Has a Cart (No Changes)
+
+// @route POST /api/cart/merge
+// @desc Merge guest cart into user cart on login
+// @access Private
 router.post("/merge", protect, async (req, res) => {
   const { guestId } = req.body;
 
@@ -212,8 +221,8 @@ router.post("/merge", protect, async (req, res) => {
         return res.status(400).json({ message: "Guest cart is empty" });
       }
 
-      if (userCart) {
-        // Merge guest cart into user cart
+      if (guestCart && userCart) {
+        // Case 1: Both Guest Cart and User Cart Exist (Merge Carts)
         guestCart.products.forEach((guestItem) => {
           const productIndex = userCart.products.findIndex(
             (item) =>
@@ -240,23 +249,27 @@ router.post("/merge", protect, async (req, res) => {
         await userCart.save();
 
         // Remove the guest cart after merging
-        try {
-          await Cart.findOneAndDelete({ guestId });
-        } catch (error) {
-          console.error("Error deleting guest cart:", error);
-        }
+        await Cart.findOneAndDelete({ guestId });
+
         return res.status(200).json(userCart);
       } else {
-        // If the user has no existing cart, assign the guest cart to the user
-        guestCart.user = req.user._id;
-        guestCart.guestId = undefined;
-        await guestCart.save();
+        // Case 2: Guest Has a Cart, User Has No Cart (Convert Guest Cart to User Cart)
+        const newUserCart = new Cart({
+          user: req.user._id,
+          products: guestCart.products,
+          totalPrice: guestCart.totalPrice,
+        });
 
-        return res.status(200).json(guestCart);
+        await newUserCart.save();
+
+        // Remove the guest cart after transferring data
+        await Cart.findOneAndDelete({ guestId });
+
+        return res.status(200).json(newUserCart);
       }
     } else {
       if (userCart) {
-        // Guest cart has already been merged, return user cart
+        // Case 3: Guest Cart Does Not Exist, but User Already Has a Cart
         return res.status(200).json(userCart);
       }
       return res.status(404).json({ message: "Guest cart not found" });

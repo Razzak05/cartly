@@ -10,6 +10,8 @@ import orderRoutes from "./routes/orderRoute.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import subscribeRoute from "./routes/subscribeRoute.js";
 import adminRoute from "./routes/adminRoutes.js";
+import productAdminRoute from "./routes/productAdminRoutes.js";
+import adminOrderRoute from "./routes/adminOrderRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -34,6 +36,8 @@ app.use("/api/subscribe", subscribeRoute);
 
 // Admin Routes
 app.use("/api/admin/users", adminRoute);
+app.use("/api/admin/products", productAdminRoute);
+app.use("/api/admin/orders", adminOrderRoute);
 
 const PORT = process.env.PORT || 3000;
 connectDB();

@@ -18,7 +18,18 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+// Proper CORS Configuration
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Handle pre-flight requests
+app.options("*", cors());
 
 // Test API
 app.get("/", (req, res) => {
@@ -39,7 +50,7 @@ app.use("/api/admin/users", adminRoute);
 app.use("/api/admin/products", productAdminRoute);
 app.use("/api/admin/orders", adminOrderRoute);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 9000; // Ensure it matches .env
 connectDB();
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

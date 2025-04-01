@@ -58,7 +58,7 @@ router.post("/create", protect, admin, async (req, res) => {
     res.status(201).json(createdProduct);
   } catch (error) {
     console.error(error);
-    res.status(500).json("Server Error", error.message);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
@@ -121,7 +121,7 @@ router.put("/:id", protect, admin, async (req, res) => {
     }
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
@@ -141,7 +141,7 @@ router.delete("/:id", protect, admin, async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
@@ -232,7 +232,7 @@ router.get("/", async (req, res) => {
     res.status(200).json(products);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server Error");
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
@@ -249,7 +249,7 @@ router.get("/best-seller", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server Error");
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
@@ -263,7 +263,7 @@ router.get("/new-arrivals", async (req, res) => {
     res.json(newArrivals);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server Error");
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
@@ -280,7 +280,7 @@ router.get("/:id", async (req, res) => {
     }
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 
@@ -304,7 +304,7 @@ router.get("/similar/:id", async (req, res) => {
     res.json(similarProducts);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server Error: ", error.message);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 });
 export default router;

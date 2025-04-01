@@ -5,59 +5,39 @@ import GenderCollectionSection from "../components/Products/GenderCollectionSect
 import NewArrivals from "../components/Products/NewArrivals";
 import ProductDetails from "../components/Products/ProductDetails";
 import ProductGrid from "../components/Products/ProductGrid";
-
-const placeholderProducts = [
-  {
-    _id: 101,
-    name: "Placeholder Product 1",
-    price: 199,
-    images: [{ url: "https://picsum.photos/500/500?random=10" }],
-  },
-  {
-    _id: 102,
-    name: "Placeholder Product 2",
-    price: 249,
-    images: [{ url: "https://picsum.photos/500/500?random=11" }],
-  },
-  {
-    _id: 103,
-    name: "Placeholder Product 3",
-    price: 299,
-    images: [{ url: "https://picsum.photos/500/500?random=12" }],
-  },
-  {
-    _id: 104,
-    name: "Placeholder Product 4",
-    price: 349,
-    images: [{ url: "https://picsum.photos/500/500?random=13" }],
-  },
-  {
-    _id: 105,
-    name: "Placeholder Product 5",
-    price: 399,
-    images: [{ url: "https://picsum.photos/500/500?random=14" }],
-  },
-  {
-    _id: 106,
-    name: "Placeholder Product 6",
-    price: 449,
-    images: [{ url: "https://picsum.photos/500/500?random=15" }],
-  },
-  {
-    _id: 107,
-    name: "Placeholder Product 7",
-    price: 499,
-    images: [{ url: "https://picsum.photos/500/500?random=16" }],
-  },
-  {
-    _id: 108,
-    name: "Placeholder Product 8",
-    price: 549,
-    images: [{ url: "https://picsum.photos/500/500?random=17" }],
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProductsByFilters } from "../redux/slices/productsSlice";
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 const Home = () => {
+  const dispatch = useDispatch();
+  const { products, loading, error } = useSelector((state) => state.products);
+  const [bestSellerProducts, setBestSellerProducts] = useState(null);
+
+  useEffect(() => {
+    //fetch products for a specific collection
+    dispatch(
+      fetchProductsByFilters({
+        gender: "Women",
+        category: "Bottom Wear",
+        limit: 8,
+      })
+    );
+
+    // Fetch best seller products
+    const fetchBestSeller = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/products/best-seller`
+        );
+        setBestSellerProducts(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchBestSeller();
+  }, [dispatch]);
   return (
     <div>
       <Hero />
@@ -66,14 +46,17 @@ const Home = () => {
 
       {/* Best Seller */}
       <h2 className="text-3xl text-center font-bold mb-4">Best Seller</h2>
+      {bestSellerProducts ? (
+        <ProductDetails productId={bestSellerProducts._id} />
+      ) : (
+        <p className="text-center">Loading best seller product...</p>
+      )}
 
-      <ProductDetails />
-
-      <div className="container mx-auto">
+      <div className="container w-[1200px] mx-auto">
         <h2 className="text-3xl text-center font-bold mb-4">
           Top Wears for Women
         </h2>
-        <ProductGrid products={placeholderProducts} />
+        <ProductGrid products={products} loading={loading} error={error} />
       </div>
 
       <FeaturedCollection />

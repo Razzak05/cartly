@@ -1,48 +1,25 @@
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 const NewArrivals = () => {
   const scrollRef = useRef(null);
+  const [newArrivals, setNewArrivals] = useState([]);
 
-  const newArrivals = [
-    {
-      _id: "1",
-      name: "Stylish Jacket",
-      price: 120,
-      images: [{ url: "https://picsum.photos/500/500?random=1" }],
-    },
-    {
-      _id: "2",
-      name: "Casual Sneakers",
-      price: 80,
-      images: [{ url: "https://picsum.photos/500/500?random=2" }],
-    },
-    {
-      _id: "3",
-      name: "Leather Handbag",
-      price: 150,
-      images: [{ url: "https://picsum.photos/500/500?random=3" }],
-    },
-    {
-      _id: "4",
-      name: "Classic Watch",
-      price: 200,
-      images: [{ url: "https://picsum.photos/500/500?random=4" }],
-    },
-    {
-      _id: "5",
-      name: "Denim Jeans",
-      price: 90,
-      images: [{ url: "https://picsum.photos/500/500?random=5" }],
-    },
-    {
-      _id: "6",
-      name: "Sports T-Shirt",
-      price: 50,
-      images: [{ url: "https://picsum.photos/500/500?random=6" }],
-    },
-  ];
+  useEffect(() => {
+    const fetchNewArrivals = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/products/new-arrivals`
+        );
+        setNewArrivals(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchNewArrivals();
+  }, []);
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -69,7 +46,7 @@ const NewArrivals = () => {
       currentRef.addEventListener("wheel", handleWheel);
       return () => currentRef.removeEventListener("wheel", handleWheel);
     }
-  }, []);
+  }, [newArrivals]);
 
   return (
     <section className="relative max-w-screen-xl mx-auto p-4 scroll-smooth">

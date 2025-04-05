@@ -1,23 +1,31 @@
 import { useState } from "react";
 import { HiMagnifyingGlass, HiMiniXMark } from "react-icons/hi2";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  fetchProductsByFilters,
+  setFilters,
+} from "../../redux/slices/productsSlice";
 
 const suggestions = [
-  "Jeans",
-  "T-Shirts",
-  "Shirts",
-  "Chinos",
-  "Polos",
-  "Kurti",
-  "Sweaters",
-  "Jackets",
-  "Shorts",
-  "Dresses",
+  "jeans",
+  "t-shirts",
+  "shirts",
+  "chinos",
+  "polos",
+  "kurti",
+  "sweaters",
+  "jackets",
+  "shorts",
+  "dresses",
 ];
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Handle input changes (updates searchTerm only)
   const handleInputChange = (e) => {
@@ -54,7 +62,9 @@ const SearchBar = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log("Search Term: ", searchTerm); // Fixed: was using setSearchTerm instead of searchTerm
+    dispatch(setFilters({ search: searchTerm }));
+    dispatch(fetchProductsByFilters({ search: searchTerm }));
+    navigate(`/collections/all?search=${searchTerm}`);
     setIsOpen(false);
   };
 

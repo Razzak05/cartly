@@ -16,9 +16,9 @@ const ProductDetails = ({ productId }) => {
     (state) => state.products
   );
   const { user, guestId } = useSelector((state) => state.auth);
-  const [mainImage, setMainImage] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
+  const [mainImage, setMainImage] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
@@ -39,14 +39,10 @@ const ProductDetails = ({ productId }) => {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      toast.error("Please select a size.", {
-        duration: 1000,
-      });
+      toast.error("Please select a size.", { duration: 1000 });
       return;
     } else if (!selectedColor) {
-      toast.error("Please select a color", {
-        duration: 1000,
-      });
+      toast.error("Please select a color", { duration: 1000 });
       return;
     }
 
@@ -63,9 +59,7 @@ const ProductDetails = ({ productId }) => {
       })
     )
       .then(() => {
-        toast.success("Product added to cart!", {
-          duration: 1000,
-        });
+        toast.success("Product added to cart!", { duration: 1000 });
       })
       .finally(() => {
         setIsButtonDisabled(false);

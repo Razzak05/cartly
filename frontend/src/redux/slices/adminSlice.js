@@ -44,7 +44,7 @@ export const updateUser = createAsyncThunk(
         { name, email, role },
         { withCredentials: true }
       );
-      return response.data;
+      return response.data.user;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to update user");
     }
@@ -119,7 +119,7 @@ const adminSlice = createSlice({
           (user) => user._id === updateUser._id
         );
         if (userIndex > -1) {
-          state.user[userIndex] = updatedUser;
+          state.users[userIndex] = updatedUser;
         }
       })
       .addCase(updateUser.rejected, (state, action) => {

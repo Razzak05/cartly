@@ -22,10 +22,15 @@ import { Provider } from "react-redux";
 import store from "./redux/store.js";
 import ProtectedRoute from "./components/Common/ProtectedRoute.jsx";
 
+// Import the AuthInitializer component
+import AuthInitializer from "./components/Common/AuthInitializer.jsx";
+
 const App = () => {
   return (
     <Provider store={store}>
       <BrowserRouter>
+        {/* Rehydrate the auth state on app load */}
+        <AuthInitializer />
         <Toaster position="top-right" />
         <Routes>
           {/* User Layout */}

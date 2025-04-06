@@ -20,7 +20,7 @@ export const loginUser = createAsyncThunk(
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/users/login`,
         userData,
-        { withCredentials: true } // Ensure HTTP-only cookies are sent
+        { withCredentials: true }
       );
       return response.data.user;
     } catch (error) {
@@ -46,7 +46,6 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Authentication Slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -57,6 +56,10 @@ const authSlice = createSlice({
     logoutUser: (state) => {
       state.user = null;
       state.error = null;
+    },
+    // New action to update the state with the rehydrated user
+    setUser: (state, action) => {
+      state.user = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -90,5 +93,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { generateNewGuestId, logoutUser } = authSlice.actions;
+export const { generateNewGuestId, logoutUser, setUser } = authSlice.actions;
 export default authSlice.reducer;

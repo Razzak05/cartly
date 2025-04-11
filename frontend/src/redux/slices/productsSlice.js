@@ -79,6 +79,11 @@ const initialState = {
     material: "",
     collection: "",
   },
+  pagination: {
+    page: 1,
+    pages: 1,
+    total: 0,
+  },
 };
 
 const productsSlice = createSlice({
@@ -102,8 +107,17 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProductsByFilters.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = Array.isArray(action.payload) ? action.payload : [];
+        // Make sure action.payload contains properties (products, page, pages, total)
+        state.products = Array.isArray(action.payload.products)
+          ? action.payload.products
+          : [];
+        state.pagination = {
+          page: action.payload.page,
+          pages: action.payload.pages,
+          total: action.payload.total,
+        };
       })
+
       .addCase(fetchProductsByFilters.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

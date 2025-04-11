@@ -148,6 +148,9 @@ router.delete("/:id", protect, admin, async (req, res) => {
 // @route GET /api/products
 // @desc Get all products with optional query filters
 // @access Public
+// @route GET /api/products
+// @desc Get all products with optional query filters (with pagination)
+// @access Public
 router.get("/", async (req, res) => {
   try {
     const {
@@ -163,6 +166,7 @@ router.get("/", async (req, res) => {
       material,
       brand,
       limit,
+      page,
     } = req.query;
 
     let query = {};
@@ -190,7 +194,7 @@ router.get("/", async (req, res) => {
       query.gender = gender;
     }
 
-    // Price Range Filtering (Fixing MongoDB syntax)
+    // Price Range Filtering
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
@@ -216,20 +220,34 @@ router.get("/", async (req, res) => {
           sort = { price: -1 };
           break;
         case "popularity":
-          sort = { rating: -1 }; // Should be descending for popularity
+          sort = { rating: -1 };
           break;
         default:
-          sort = { createdAt: -1 }; // Default: show newest first
+          sort = { createdAt: -1 };
           break;
       }
     }
 
-    // Fetch products from database
-    let products = await Product.find(query)
-      .sort(sort)
-      .limit(Number(limit) || 0);
+    // Pagination Setup: define default values if not provided
+    const pageNumber = Number(page) || 1;
+    const itemsPerPage = Number(limit) || 10;
+    const skip = (pageNumber - 1) * itemsPerPage;
 
-    res.status(200).json(products);
+    // Count total documents for pagination metadata
+    const total = await Product.countDocuments(query);
+
+    // Fetch products with pagination
+    const products = await Product.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(itemsPerPage);
+
+    res.status(200).json({
+      products,
+      page: pageNumber,
+      pages: Math.ceil(total / itemsPerPage),
+      total,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error", error: error.message });

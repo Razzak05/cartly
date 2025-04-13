@@ -62,7 +62,7 @@ export const fetchSimilarProducts = createAsyncThunk(
 
 export const addProductReview = createAsyncThunk(
   "products/addProductReview",
-  async ({ productId, rating, comment }, { getState, rejectWithValue }) => {
+  async ({ productId, rating, comment }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         `${API_URL}/${productId}/reviews`,
@@ -74,6 +74,21 @@ export const addProductReview = createAsyncThunk(
           },
         }
       );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// NEW: Async Thunk: Add Product
+export const addProduct = createAsyncThunk(
+  "products/addProducts",
+  async (productData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/create`, productData, {
+        withCredentials: true,
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -213,6 +228,20 @@ const productsSlice = createSlice({
         }
       })
       .addCase(addProductReview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // NEW: Add Product
+      .addCase(addProduct.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        // Optionally, add the new product to the products array if needed
+        state.products.push(action.payload);
+      })
+      .addCase(addProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

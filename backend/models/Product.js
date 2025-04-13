@@ -76,18 +76,6 @@ const productSchema = new mongoose.Schema({
   },
 
   tags: [String],
-
-  metaTitle: {
-    type: String,
-  },
-
-  metaDescription: {
-    type: String,
-  },
-
-  metaKeywords: {
-    type: String,
-  },
   dimensions: {
     length: Number,
     width: Number,

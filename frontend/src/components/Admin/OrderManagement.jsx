@@ -21,12 +21,13 @@ const OrderManagement = () => {
     }
   }, [dispatch, user, navigate]);
 
-  const handlestatusChange = (orderId, status) => {
-    dispatch(updateOrderStatus({ id: orderId, status }));
+  const handleStatusChange = (orderId, status) => {
+    dispatch(updateOrderStatus({ orderId, status }));
   };
 
-  if (loading) return <p>loading...</p>;
-  if (error) return <p>Error: {error}...</p>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-6">Order Management</h2>
@@ -51,13 +52,13 @@ const OrderManagement = () => {
                   <td className="py-4 px-4 font-medium text-gray-900 whitespace-nowrap">
                     #{order._id}
                   </td>
-                  <td className="p-4">{order.user.name}</td>
+                  <td className="p-4">{order.user?.name || "Unknown User"}</td>
                   <td className="p-4">${order.totalPrice.toFixed(2)}</td>
                   <td className="p-4">
                     <select
                       value={order.status}
                       onChange={(e) =>
-                        handlestatusChange(order._id, e.target.value)
+                        handleStatusChange(order._id, e.target.value)
                       }
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
                     >
@@ -68,15 +69,25 @@ const OrderManagement = () => {
                     </select>
                   </td>
                   <td className="p-4">
-                    <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    <button
+                      onClick={() => handleStatusChange(order._id, "Delivered")}
+                      disabled={order.status === "Delivered"}
+                      className={`px-4 py-2 rounded text-white ${
+                        order.status === "Delivered"
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-green-500 hover:bg-green-600"
+                      }`}
+                    >
                       Mark as Delivered
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr colSpan={5} className="p-4 text-center text-gray-500">
-                No Orders found.
+              <tr>
+                <td colSpan={5} className="p-4 text-center text-gray-500">
+                  No Orders found.
+                </td>
               </tr>
             )}
           </tbody>

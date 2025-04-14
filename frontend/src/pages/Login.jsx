@@ -1,23 +1,30 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import loginImage from "../assets/login.webp";
 import { loginUser } from "../redux/slices/authSlice";
 import { mergeCart } from "../redux/slices/cartSlice";
-import { useDispatch, useSelector } from "react-redux";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { user, guestId, loading } = useSelector((state) => state.auth);
+  const { user, guestId, loading, error } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.cart);
 
   const redirect = new URLSearchParams(location.search).get("redirect") || "/";
   const isCheckoutRedirect = redirect.includes("checkout");
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${
+      import.meta.env.VITE_BACKEND_URL
+    }/api/users/auth/google`;
+  };
 
   useEffect(() => {
     if (user) {
@@ -37,7 +44,8 @@ const Login = () => {
   }, [user, guestId, cart, navigate, isCheckoutRedirect, dispatch]);
 
   const validateForm = () => {
-    let newErrors = {};
+    const newErrors = {};
+
     if (!email.trim()) {
       newErrors.email = "Email is required.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -71,10 +79,17 @@ const Login = () => {
           <div className="flex justify-center mb-6">
             <h2 className="text-xl font-medium">Cartly</h2>
           </div>
-          <h2 className="text-2xl font-bold text-center mb-6">Hey there! 👋🏻</h2>
-          <p className="text-center mb-6">
+
+          <h2 className="text-2xl font-bold text-center mb-4">Hey there! 👋🏻</h2>
+          <p className="text-center mb-4">
             Enter your username and password to login
           </p>
+
+          {error && (
+            <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">
+              {error}
+            </div>
+          )}
 
           <div className="mb-4">
             <label className="block text-sm font-semibold mb-2">Email</label>
@@ -86,7 +101,7 @@ const Login = () => {
               placeholder="Enter your email address"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
             )}
           </div>
 
@@ -100,7 +115,7 @@ const Login = () => {
               placeholder="Enter Password"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
             )}
           </div>
 
@@ -108,7 +123,26 @@ const Login = () => {
             type="submit"
             className="w-full bg-black text-white p-2 rounded-lg font-semibold hover:bg-gray-800 transition"
           >
-            {loading ? "loading" : "Sign In"}
+            {loading ? "Loading..." : "Sign In"}
+          </button>
+
+          <div className="flex items-center my-4">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink mx-4 text-gray-500 text-sm">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full p-2 border border-gray-300 rounded-lg font-medium flex items-center justify-center hover:bg-gray-50 transition"
+          >
+            <img
+              src="/src/assets/google.png"
+              alt="Google"
+              className="w-5 h-5 mr-2"
+            />
+            Continue with Google
           </button>
 
           <p className="mt-6 text-center text-sm">

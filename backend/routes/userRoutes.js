@@ -1,9 +1,14 @@
 import express from "express";
+import passport from "passport";
 import User from "../models/User.js";
 import generateToken from "../util/generateToken.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+//---------------------------------------------------
+// Traditional Email/Password Routes
+//---------------------------------------------------
 
 //@route POST /api/users/register
 //@desc Register a new user
@@ -28,7 +33,7 @@ router.post("/register", async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
       maxAge: 24 * 60 * 60 * 1000, // 1 day
-      sameSite: "strict", // Prevent CSRF
+      sameSite: "strict",
     });
 
     // Send user details in response
@@ -39,7 +44,6 @@ router.post("/register", async (req, res) => {
         email: user.email,
         role: user.role,
       },
-      token,
     });
   } catch (error) {
     console.error("Register Error:", error);
@@ -70,9 +74,9 @@ router.post("/login", async (req, res) => {
     // Set token as HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-      sameSite: "strict", // Prevent CSRF
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: "strict",
     });
 
     // Send user details in response
@@ -83,7 +87,6 @@ router.post("/login", async (req, res) => {
         email: user.email,
         role: user.role,
       },
-      token,
     });
   } catch (error) {
     console.error("Login Error:", error);
@@ -129,7 +132,7 @@ router.post("/logout", async (req, res) => {
 });
 
 //@route GET /api/users/profile
-//@desc Get logged-in user's profile (Protected Route) - Keeping this for backward compatibility
+//@desc Get logged-in user's profile (Protected Route) - For backward compatibility
 router.get("/profile", protect, async (req, res) => {
   try {
     res.json({
@@ -145,5 +148,41 @@ router.get("/profile", protect, async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
+
+//---------------------------------------------------
+// Google OAuth Routes (Using Passport)
+//---------------------------------------------------
+
+//@route GET /api/users/auth/google
+//@desc Initiate Google OAuth login
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+//@route GET /api/users/auth/google/callback
+//@desc Google OAuth callback endpoint
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login", // Adjust as needed for your UI
+    session: false, // Using JWT, not sessions
+  }),
+  (req, res) => {
+    // Successful authentication: generate JWT token
+    const token = generateToken(req.user._id, req.user.role);
+
+    // Set token as HTTP-only cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: "strict",
+    });
+
+    // Redirect the user to the client app
+    res.redirect(process.env.FRONTEND_URL);
+  }
+);
 
 export default router;

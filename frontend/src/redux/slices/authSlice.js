@@ -12,7 +12,7 @@ const initialState = {
   error: null,
 };
 
-// Async Thunk for User Login
+// Async Thunks
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (userData, { rejectWithValue }) => {
@@ -29,7 +29,6 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Async Thunk for User Registration
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (userData, { rejectWithValue }) => {
@@ -46,6 +45,23 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUserAsync",
+  async (_, { rejectWithValue }) => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/users/logout`,
+        {},
+        { withCredentials: true }
+      );
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Logout failed");
+    }
+  }
+);
+
+// Slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -53,18 +69,17 @@ const authSlice = createSlice({
     generateNewGuestId: (state) => {
       state.guestId = generateGuestId();
     },
-    logoutUser: (state) => {
+    clearUser: (state) => {
       state.user = null;
       state.error = null;
     },
-    // New action to update the state with the rehydrated user
     setUser: (state, action) => {
       state.user = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Login Cases
+      // Login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -77,7 +92,8 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Register Cases
+
+      // Register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -89,9 +105,23 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // Logout
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { generateNewGuestId, logoutUser, setUser } = authSlice.actions;
+export const { generateNewGuestId, clearUser, setUser } = authSlice.actions;
 export default authSlice.reducer;

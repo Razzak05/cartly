@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import passport from "passport";
+import configurePassport from "./config/passportGoogle.js";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -32,6 +34,8 @@ app.use(
 // Handle pre-flight requests
 app.options("*", cors());
 app.use(cookieParser());
+configurePassport();
+app.use(passport.initialize());
 
 // Test API
 app.get("/", (req, res) => {

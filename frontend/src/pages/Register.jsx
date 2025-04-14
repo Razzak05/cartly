@@ -13,11 +13,17 @@ const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, guestId, loading } = useSelector((state) => state.auth);
+  const { user, guestId, loading, error } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.cart);
 
   const redirect = new URLSearchParams(location.search).get("redirect") || "/";
   const isCheckoutRedirect = redirect.includes("checkout");
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${
+      import.meta.env.VITE_BACKEND_URL
+    }/api/users/auth/google`;
+  };
 
   useEffect(() => {
     if (user) {
@@ -34,7 +40,7 @@ const Register = () => {
         navigate(isCheckoutRedirect ? "/checkout" : "/");
       }
     }
-  }, [user, guestId, cart, navigate, isCheckoutRedirect, dispatch, redirect]);
+  }, [user, guestId, cart, navigate, isCheckoutRedirect, dispatch]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -81,7 +87,6 @@ const Register = () => {
               onChange={(e) => setName(e.target.value)}
               className="w-full p-2 border rounded"
               placeholder="Enter your Name"
-              required
             />
             {errors.name && (
               <p className="text-red-500 text-sm mt-1">{errors.name}</p>
@@ -96,7 +101,6 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-2 border rounded"
               placeholder="Enter your email address"
-              required
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -111,7 +115,6 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border rounded"
               placeholder="Enter Password"
-              required
             />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">{errors.password}</p>
@@ -122,8 +125,31 @@ const Register = () => {
             type="submit"
             className="w-full bg-black text-white p-2 rounded-lg font-semibold hover:bg-gray-800 transition"
           >
-            {loading ? "loading" : "Sign Up"}
+            {loading ? "Loading..." : "Sign Up"}
           </button>
+
+          <div className="flex items-center my-4">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink mx-4 text-gray-500 text-sm">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full p-2 border border-gray-300 rounded-lg font-medium flex items-center justify-center hover:bg-gray-50 transition"
+          >
+            <img
+              src="/src/assets/google.png"
+              alt="Google"
+              className="w-5 h-5 mr-2"
+            />
+            Continue with Google
+          </button>
+
+          {error && (
+            <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
+          )}
 
           <p className="mt-6 text-center text-sm">
             Already have an account?{" "}

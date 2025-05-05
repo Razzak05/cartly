@@ -308,74 +308,9 @@ router.get("/similar/:id", async (req, res) => {
   }
 });
 
-// GET /api/products/:id/reviews?page=1&limit=10
-router.get("/:id/reviews", async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found." });
-    }
-    const sortedReviews = product.reviews.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
-    const startIndex = (page - 1) * limit;
-    const paginatedReviews = sortedReviews.slice(
-      startIndex,
-      startIndex + limit
-    );
-    const totalReviews = product.reviews.length;
-    const totalPages = Math.ceil(totalReviews / limit);
-    res.status(200).json({
-      reviews: paginatedReviews,
-      totalReviews,
-      currentPage: page,
-      totalPages,
-    });
-  } catch (error) {
-    console.error("Error fetching reviews:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-});
-
-// @route POST /api/products/:id/reviews
-// @desc Add a review for a product (only allowed if the user has bought the product)
-// @access Private
-router.get("/:id/reviews", async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found." });
-    }
-    const sortedReviews = product.reviews.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
-    const startIndex = (page - 1) * limit;
-    const paginatedReviews = sortedReviews.slice(
-      startIndex,
-      startIndex + limit
-    );
-    const totalReviews = product.reviews.length;
-    const totalPages = Math.ceil(totalReviews / limit);
-    res.status(200).json({
-      reviews: paginatedReviews,
-      totalReviews,
-      currentPage: page,
-      totalPages,
-    });
-  } catch (error) {
-    console.error("Error fetching reviews:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-});
-
 // POST /api/products/:id/reviews
-// Add a review for a product (only allowed if the user has bought the product)
+// @desc Add a review for a product (only allowed if the user has bought the product)
+// @access public
 router.post("/:id/reviews", protect, async (req, res) => {
   try {
     const { rating, comment } = req.body;
@@ -417,6 +352,42 @@ router.post("/:id/reviews", protect, async (req, res) => {
     res.status(201).json({ message: "Review added", reviews: product.reviews });
   } catch (error) {
     console.error("Review submission error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+});
+
+// @route Get /api/products/:id/reviews
+// @desc get reviews for the product
+// @access Public
+router.get("/:id/reviews", async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found." });
+    }
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const sortedReviews = product.reviews.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    const startIndex = (page - 1) * limit;
+    const paginatedReviews = sortedReviews.slice(
+      startIndex,
+      startIndex + limit
+    );
+    const totalReviews = product.reviews.length;
+    const totalPages = Math.ceil(totalReviews / limit);
+    res.status(200).json({
+      reviews: paginatedReviews,
+      totalReviews,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 });

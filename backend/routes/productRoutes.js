@@ -165,10 +165,10 @@ router.get("/", async (req, res) => {
 
     let query = {};
     // Filtering...
-    if (collection && collection.toLowerCase() !== "all") {
+    if (collection) {
       query.collection = collection;
     }
-    if (category && category.toLowerCase() !== "all") {
+    if (category) {
       query.category = category;
     }
     if (material) {

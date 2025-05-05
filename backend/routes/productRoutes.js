@@ -342,6 +342,7 @@ router.post("/:id/reviews", protect, async (req, res) => {
       name: req.user.name,
       rating: Number(rating),
       comment,
+      createdAt: new Date(),
     };
     product.reviews.push(review);
     product.reviewCount = product.reviews.length;
@@ -374,17 +375,14 @@ router.get("/:id/reviews", async (req, res) => {
     );
 
     const startIndex = (page - 1) * limit;
-    const paginatedReviews = sortedReviews.slice(
-      startIndex,
-      startIndex + limit
-    );
-    const totalReviews = product.reviews.length;
-    const totalPages = Math.ceil(totalReviews / limit);
+    const endIndex = startIndex + limit;
+    const paginatedReviews = sortedReviews.slice(startIndex, endIndex);
+
     res.status(200).json({
       reviews: paginatedReviews,
-      totalReviews,
+      totalReviews: product.reviews.length,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(product.reviews.length / limit),
     });
   } catch (error) {
     console.error("Error fetching reviews:", error);

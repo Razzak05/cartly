@@ -17,7 +17,11 @@ const AuthInitializer = () => {
         }
       })
       .catch((error) => {
-        console.error("Failed to fetch user:", error);
+        // A 401 simply means there is no saved login session yet.
+        // Keep genuine request failures visible for troubleshooting.
+        if (error.response?.status !== 401) {
+          console.error("Failed to fetch user:", error);
+        }
       });
   }, [dispatch]);
 

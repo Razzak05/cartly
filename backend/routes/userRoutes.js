@@ -34,7 +34,9 @@ router.post("/register", async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
       maxAge: 24 * 60 * 60 * 1000, // 1 day
-      sameSite: "strict",
+      // The deployed frontend and API use different origins, so the cookie
+      // must be allowed on credentialed cross-origin API requests.
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
 
     // Send user details in response
@@ -77,7 +79,7 @@ router.post("/login", async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
 
     // Send user details in response
@@ -122,7 +124,7 @@ router.post("/logout", async (req, res) => {
       httpOnly: true,
       expires: new Date(0), // Expire immediately
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
 
     res.status(200).json({ message: "Logged out successfully" });
@@ -191,7 +193,7 @@ router.get(
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
 
     // Redirect the user to the client app

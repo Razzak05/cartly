@@ -1,5 +1,6 @@
 import express from "express";
 import passport from "passport";
+import { isGoogleOAuthConfigured } from "../config/passportGoogle.js";
 import User from "../models/User.js";
 import generateToken from "../util/generateToken.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -153,10 +154,22 @@ router.get("/profile", protect, async (req, res) => {
 // Google OAuth Routes (Using Passport)
 //---------------------------------------------------
 
+const requireGoogleOAuth = (req, res, next) => {
+  if (!isGoogleOAuthConfigured()) {
+    return res.status(503).json({
+      message:
+        "Google sign-in is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_CALLBACK_URL on the server.",
+    });
+  }
+
+  next();
+};
+
 //@route GET /api/users/auth/google
 //@desc Initiate Google OAuth login
 router.get(
   "/auth/google",
+  requireGoogleOAuth,
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
@@ -164,6 +177,7 @@ router.get(
 //@desc Google OAuth callback endpoint
 router.get(
   "/auth/google/callback",
+  requireGoogleOAuth,
   passport.authenticate("google", {
     failureRedirect: "/login", // Adjust as needed for your UI
     session: false, // Using JWT, not sessions

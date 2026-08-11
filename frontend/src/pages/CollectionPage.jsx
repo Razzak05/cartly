@@ -22,8 +22,14 @@ const CollectionPage = () => {
   const queryParams = Object.fromEntries([...searchParams]);
 
   useEffect(() => {
-    // Dispatch filters including pagination parameters (e.g., page and limit)
-    dispatch(fetchProductsByFilters({ collection, ...queryParams }));
+    // `all` is a UI route, not a product collection value. Sending
+    // collection=all makes the API filter out every product.
+    const filters =
+      collection && collection !== "all"
+        ? { collection, ...queryParams }
+        : queryParams;
+
+    dispatch(fetchProductsByFilters(filters));
   }, [dispatch, collection, searchParams]);
 
   const toggleSidebar = () => {

@@ -166,7 +166,7 @@ router.get("/", async (req, res) => {
     let query = {};
     // Filtering...
     if (collection) {
-      query.collection = collection;
+      query.collections = collection;
     }
     if (category) {
       query.category = category;

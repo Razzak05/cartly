@@ -16,23 +16,25 @@ import adminRoute from "./routes/adminRoutes.js";
 import productAdminRoute from "./routes/productAdminRoutes.js";
 import adminOrderRoute from "./routes/adminOrderRoutes.js";
 
-dotenv.config();
+// Resolve the env file relative to this module so `node backend/server.js`
+// works even when the command is run from the project root.
+dotenv.config({ path: new URL(".env", import.meta.url) });
 const app = express();
+const frontendOrigin = process.env.FRONTEND_URL?.replace(/\/+$/, "");
+const corsOptions = {
+  origin: frontendOrigin,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
 // Middleware
 app.use(express.json());
 
 // Proper CORS Configuration
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(cors(corsOptions));
 // Handle pre-flight requests
-app.options("*", cors());
+app.options("*", cors(corsOptions));
 app.use(cookieParser());
 configurePassport();
 app.use(passport.initialize());
